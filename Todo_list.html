@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-do List</title>
+
+    <style>
+        #outer{
+            box-shadow: 0px 0px 8px 2px grey;
+            border-radius: 10%;
+            position: absolute;
+            top: 10vh;
+            left: 25vw;
+            padding: 5vw;
+
+        }
+        #hd{
+            font-size: 2vw;
+            font-weight: bolder;
+            text-shadow: 2px 2px 4px orange;
+        }
+        .bots{
+            background-color:limegreen;
+            border: 2px solid lightgreen;
+            border-radius: 10%;
+            box-shadow: 0px 0px 8px 2px lawngreen;
+        }
+        .bots,#no_of_items{
+            padding: 0.5vw;
+            color:red;
+        }
+        .bots:hover{
+            box-shadow: 0px 0px 8px 2px yellow;
+        }
+        #list{
+            height: 40vh;
+            width: 20vw;
+            overflow: scroll;
+        }
+        #add{
+            float: right;
+        }
+        .message{
+            font-weight: bolder;
+
+        }
+        #no_of_items:focus{
+
+            box-shadow: 0px 0px 8px 2px lawngreen;
+        }
+        .close{
+            float: right;
+            color: white;
+            background-color: rgb(212, 40, 40);
+        }
+        #list{
+            font-size: x-large;
+        }
+        .items{
+            padding: 2%;
+        }
+    </style>
+</head>
+<body>
+    <div id="outer">
+        <div id="innerdiv">
+            <div id="hd">My to-do List</div>
+            <br>
+            <br>
+            <div>
+                <input type="text" id="no_of_items">
+                <button id="add" class="bots" onclick="additem()">Add</button>
+            </div>
+            <br>
+            <br>
+            <div id="list">
+
+            </div>
+            <br>
+            <br>
+            <button class="bots" id="clear" onclick="clearcompleted()">Clear complete</button>&nbsp;&nbsp;
+            <button class="bots" id="empty" onclick="clearall()">Empty list</button>&nbsp;&nbsp;
+            <button class="bots" id="save" onclick="signout()">Sign out</button>
+        </div>
+    </div>
+    <script>
+        let last_saved="";
+        let uname=sessionStorage.getItem("usernow");
+        let getuser=localStorage.getItem(uname);
+        let user=JSON.parse(getuser);
+        
+        window.onload=function(){
+            let usernow=localStorage.getItem("usernow");
+            let obj=JSON.parse(localStorage.getItem(usernow));
+            let list=document.getElementById("list");
+            let i;
+            if((obj).content!=undefined){
+                console.log(obj);
+                for(let tasks in obj.content){
+                    list.innerHTML+=writeTasks(obj.content[tasks]["task"],i);
+                    i++;
+                }
+            }
+            user.total_tasks=i;
+            localStorage.setItem(usernow,JSON.stringify(user));
+        };
+
+        function writeTasks(newthing,size_of_array){
+            let addit=document.createElement("div");
+            addit.classList.add("items");
+            addit.innerHTML+=`<span class="message" ondblclick="complete(this)" id="t${size_of_array}">${newthing}</span><span class="close" onclick="clearit(this)" id="c${size_of_array}">x</span>`;
+            return addit.outerHTML;
+        }
+        
+        function additem(){
+            let newthing=document.getElementById("no_of_items").value;
+            
+            let obj={
+                task:newthing,
+                completed:"no"
+            };
+            user.content[`t${user.total_tasks}`]=obj;
+            console.log(user.content);
+            let list=document.getElementById("list");
+            list.innerHTML+=writeTasks(newthing,user.total_tasks);
+            user.total_tasks++;
+            localStorage.setItem(uname,JSON.stringify(user));
+        }
+
+        function complete(el){
+            if(el.style.textDecoration!="line-through"){
+                el.style.textDecoration="line-through";
+                user.content[`t${parseInt(el.id.slice(1,el.id.length))}`].completed="yes";
+                localStorage.setItem(uname,JSON.stringify(user));
+            }
+            else{
+                el.style.textDecoration="none";
+                user.content[`t${parseInt(el.id.slice(1,el.id.length))}`].completed="no";
+                localStorage.setItem(uname,JSON.stringify(user));
+            }
+        }
+
+        function clearit(el){
+            delete user.content[`t${parseInt(el.id.slice(1,el.id.length))}`];
+            el.parentNode.parentNode.removeChild(el.parentNode);
+            localStorage.setItem(uname,JSON.stringify(user));
+        }
+
+        function clearcompleted(){
+            [...document.getElementsByClassName("message")].forEach(el=>{
+                if(el.style.textDecoration=="line-through"){
+                    delete user.content[`t${parseInt(el.id.slice(1,el.id.length))}`];
+                    el.parentNode.parentNode.removeChild(el.parentNode);
+                }
+            });
+            localStorage.setItem(uname,JSON.stringify(user));
+        }
+
+        function clearall(){
+            document.getElementById("list").innerHTML="";
+            user.content={};
+            localStorage.setItem(uname,JSON.stringify(user));
+        }
+        
+
+        function signout(){
+            window.location.href="Home page.html";
+            window.location.replace("Home page.html");
+            sessionStorage.setItem("usernow","");
+        }
+    </script>
+</body>
+</html>
